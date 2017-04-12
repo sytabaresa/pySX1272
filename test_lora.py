@@ -68,19 +68,19 @@ class TestSX127x(unittest.TestCase):
             lora.set_freq(f)
             self.assertEqual(lora.get_freq(), f)
 
-    @SaveState(REG.LORA.MODEM_CONFIG_3)
+    @SaveState(REG.LORA.MODEM_CONFIG_2)
     def test_set_agc_on(self):
         lora.set_agc_auto_on(True)
-        self.assertEqual((get_reg(REG.LORA.MODEM_CONFIG_3) & 0b100) >> 2, 1)
+        self.assertEqual((get_reg(REG.LORA.MODEM_CONFIG_2) & 0b100) >> 2, 1)
         lora.set_agc_auto_on(False)
-        self.assertEqual((get_reg(REG.LORA.MODEM_CONFIG_3) & 0b100) >> 2, 0)
+        self.assertEqual((get_reg(REG.LORA.MODEM_CONFIG_2) & 0b100) >> 2, 0)
 
-    @SaveState(REG.LORA.MODEM_CONFIG_3)
+    @SaveState(REG.LORA.MODEM_CONFIG_1)
     def test_set_low_data_rate_optim(self):
         lora.set_low_data_rate_optim(True)
-        self.assertEqual((get_reg(REG.LORA.MODEM_CONFIG_3) & 0b1000) >> 3, 1)
+        self.assertEqual(get_reg(REG.LORA.MODEM_CONFIG_1) & 0b1, 1)
         lora.set_low_data_rate_optim(False)
-        self.assertEqual((get_reg(REG.LORA.MODEM_CONFIG_3) & 0b1000) >> 3, 0)
+        self.assertEqual(get_reg(REG.LORA.MODEM_CONFIG_1) & 0b1, 0)
 
     @SaveState(REG.LORA.DIO_MAPPING_1, 2)
     def test_set_dio_mapping(self):

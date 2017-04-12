@@ -35,7 +35,7 @@ class LoRaArgumentParser(argparse.ArgumentParser):
         the LoRa.
     """
 
-    bw_lookup = dict(BW7_8=0, BW10_4=1, BW15_6=2, BW20_8=3, BW31_25=4, BW41_7=5, BW62_5=6, BW125=7, BW250=8, BW500=9)
+    bw_lookup = dict(BW125=0, BW250=1, BW500=3)
     cr_lookup = dict(CR4_5=1, CR4_6=2,CR4_7=3,CR4_8=4)
 
     def __init__(self, description):
@@ -47,7 +47,7 @@ class LoRaArgumentParser(argparse.ArgumentParser):
         self.add_argument('--freq', '-f', dest='freq', default=869., action="store", type=float,
                           help="Frequency")
         self.add_argument('--bw', '-b', dest='bw', default='BW125', action="store", type=str,
-                          help="Bandwidth (one of BW7_8 BW10_4 BW15_6 BW20_8 BW31_25 BW41_7 BW62_5 BW125 BW250 BW500).\nDefault is BW125.")
+                          help="Bandwidth (one of BW125 BW250 BW500).\nDefault is BW125.")
         self.add_argument('--cr', '-r', dest='coding_rate', default='CR4_5', action="store", type=str,
                           help="Coding rate (one of CR4_5 CR4_6 CR4_7 CR4_8).\nDefault is CR4_5.")
         self.add_argument('--preamble', '-p', dest='preamble', default=8, action="store", type=int,

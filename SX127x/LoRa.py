@@ -509,16 +509,18 @@ class LoRa(object):
     def get_modem_config_1(self):
         val = self.spi.xfer([REG.LORA.MODEM_CONFIG_1, 0])[1]
         return dict(
-                bw = val >> 4 & 0x0F,
-                coding_rate = val >> 1 & 0x07,
-                implicit_header_mode = val & 0x01
+                bw = val >> 6 & 0x03,
+                coding_rate = val >> 3 & 0x07,
+                implicit_header_mode = val >> 2 & 0x01,
+                rx_crc = val >> 1 & 0x01,
+                low_data_rate_optim = val & 0x01 #diferent spec in Sx1272
             )
         
-    def set_modem_config_1(self, bw=None, coding_rate=None, implicit_header_mode=None):
+    def set_modem_config_1(self, bw=None, coding_rate=None, implicit_header_mode=None, rx_crc=None, low_data_rate_optim=None):
         loc = locals()
         current = self.get_modem_config_1()
         loc = {s: current[s] if loc[s] is None else loc[s] for s in loc}
-        val = loc['implicit_header_mode'] | (loc['coding_rate'] << 1) | (loc['bw'] << 4)
+        val = loc['low_data_rate_optim'] | (loc['rx_crc'] << 1) | (loc['implicit_header_mode'] << 2) | (loc['coding_rate'] << 3) | (loc['bw'] << 6)
         return self.spi.xfer([REG.LORA.MODEM_CONFIG_1 | 0x80, val])[1]
 
     def set_bw(self, bw):
@@ -543,39 +545,25 @@ class LoRa(object):
         d = dict(
                 spreading_factor = val >> 4 & 0x0F,
                 tx_cont_mode = val >> 3 & 0x01,
-                rx_crc = val >> 2 & 0x01,
+                agc_auto_on = val >> 2 & 0x01
             )
         if include_symb_timout_lsb:
             d['symb_timout_lsb'] = val & 0x03
         return d
         
-    def set_modem_config_2(self, spreading_factor=None, tx_cont_mode=None, rx_crc=None):
+    def set_modem_config_2(self, spreading_factor=None, tx_cont_mode=None, agc_auto_on=None):
         loc = locals()
         # RegModemConfig2 contains the SymbTimout MSB bits. We tack the back on when writing this register.
         current = self.get_modem_config_2(include_symb_timout_lsb=True)
         loc = {s: current[s] if loc[s] is None else loc[s] for s in loc}
-        val = (loc['spreading_factor'] << 4) | (loc['tx_cont_mode'] << 3) | (loc['rx_crc'] << 2) | current['symb_timout_lsb']
+        val = (loc['spreading_factor'] << 4) | (loc['tx_cont_mode'] << 3) | (loc['agc_auto_on'] << 2) | current['symb_timout_lsb']
         return self.spi.xfer([REG.LORA.MODEM_CONFIG_2 | 0x80, val])[1]
 
     def set_spreading_factor(self, spreading_factor):
         self.set_modem_config_2(spreading_factor=spreading_factor)
 
     def set_rx_crc(self, rx_crc):
-        self.set_modem_config_2(rx_crc=rx_crc)
-
-    def get_modem_config_3(self):
-        val = self.spi.xfer([REG.LORA.MODEM_CONFIG_3, 0])[1]
-        return dict(
-                low_data_rate_optim = val >> 3 & 0x01,
-                agc_auto_on = val >> 2 & 0x01
-            )
-
-    def set_modem_config_3(self, low_data_rate_optim=None, agc_auto_on=None):
-        loc = locals()
-        current = self.get_modem_config_3()
-        loc = {s: current[s] if loc[s] is None else loc[s] for s in loc}
-        val = (loc['low_data_rate_optim'] << 3) | (loc['agc_auto_on'] << 2)
-        return self.spi.xfer([REG.LORA.MODEM_CONFIG_3 | 0x80, val])[1]
+        self.set_modem_config_1(rx_crc=rx_crc)
 
     @setter(REG.LORA.INVERT_IQ)
     def set_invert_iq(self, invert):
@@ -593,31 +581,31 @@ class LoRa(object):
         return (val >> 6) & 0x01
 
     def get_agc_auto_on(self):
-        return self.get_modem_config_3()['agc_auto_on']
+        return self.get_modem_config_2()['agc_auto_on']
 
     def set_agc_auto_on(self, agc_auto_on):
-        self.set_modem_config_3(agc_auto_on=agc_auto_on)
+        self.set_modem_config_2(agc_auto_on=agc_auto_on)
 
     def get_low_data_rate_optim(self):
-        return self.set_modem_config_3()['low_data_rate_optim']
+        return self.set_modem_config_1()['low_data_rate_optim']
 
     def set_low_data_rate_optim(self, low_data_rate_optim):
-        self.set_modem_config_3(low_data_rate_optim=low_data_rate_optim)
+        self.set_modem_config_1(low_data_rate_optim=low_data_rate_optim)
 
     def get_symb_timeout(self):
         SYMB_TIMEOUT_MSB = REG.LORA.MODEM_CONFIG_2
-        msb, lsb = self.spi.xfer([SYMB_TIMEOUT_MSB, 0, 0])[1:]    # the MSB bits are stored in REG.LORA.MODEM_CONFIG_2
-        msb = msb & 0b11
-        return lsb + 256 * msb
+        msb, lsb = self.spi.xfer([SYMB_TIMEOUT_MSB, REG.LORA.SYMB_TIMEOUT_LSB, 0])[1:]    # the MSB bits are stored in REG.LORA.MODEM_CONFIG_2
+        msb = msb & 0x03
+        return lsb + msb << 16
 
     def set_symb_timeout(self, timeout):
         bkup_reg_modem_config_2 = self.spi.xfer([REG.LORA.MODEM_CONFIG_2, 0])[1]
-        msb = timeout >> 8 & 0b11    # bits 8-9
-        lsb = timeout - 256 * msb    # bits 0-7
+        msb = timeout >> 8 & 0x03  # bits 8-9
+        lsb = timeout - msb << 16    # bits 0-7
         reg_modem_config_2 = bkup_reg_modem_config_2 & 0xFC | msb    # bits 2-7 of bkup_reg_modem_config_2 ORed with the two msb bits
         old_msb = self.spi.xfer([REG.LORA.MODEM_CONFIG_2  | 0x80, reg_modem_config_2])[1] & 0x03
         old_lsb = self.spi.xfer([REG.LORA.SYMB_TIMEOUT_LSB | 0x80, lsb])[1]
-        return old_lsb + 256 * old_msb
+        return old_lsb + old_msb << 16
 
     def get_preamble(self):
         msb, lsb = self.spi.xfer([REG.LORA.PREAMBLE_MSB, 0, 0])[1:]
@@ -896,22 +884,25 @@ class LoRa(object):
         f = self.get_freq()
         cfg1 = self.get_modem_config_1()
         cfg2 = self.get_modem_config_2()
-        cfg3 = self.get_modem_config_3()
+        #cfg3 = self.get_modem_config_3()
+        cfg = cfg1.copy()
+        cfg.update(cfg2)
+        #cfg.update(cfg3)
         pa_config = self.get_pa_config(convert_dBm=True)
         ocp = self.get_ocp(convert_mA=True)
         lna = self.get_lna()
         s =  "SX127x LoRa registers:\n"
         s += " mode               %s\n" % MODE.lookup[self.get_mode()]
         s += " freq               %f MHz\n" % f
-        s += " coding_rate        %s\n" % CODING_RATE.lookup[cfg1['coding_rate']]
-        s += " bw                 %s\n" % BW.lookup[cfg1['bw']]
-        s += " spreading_factor   %s chips/symb\n" % (1 << cfg2['spreading_factor'])
-        s += " implicit_hdr_mode  %s\n" % onoff(cfg1['implicit_header_mode'])
-        s += " rx_payload_crc     %s\n" % onoff(cfg2['rx_crc'])
-        s += " tx_cont_mode       %s\n" % onoff(cfg2['tx_cont_mode'])
+        s += " coding_rate        %s\n" % CODING_RATE.lookup[cfg['coding_rate']]
+        s += " bw                 %s\n" % BW.lookup[cfg['bw']]
+        s += " spreading_factor   %s chips/symb\n" % (1 << cfg['spreading_factor'])
+        s += " implicit_hdr_mode  %s\n" % onoff(cfg['implicit_header_mode'])
+        s += " rx_payload_crc     %s\n" % onoff(cfg['rx_crc'])
+        s += " tx_cont_mode       %s\n" % onoff(cfg['tx_cont_mode'])
         s += " preamble           %d\n" % self.get_preamble()
-        s += " low_data_rate_opti %s\n" % onoff(cfg3['low_data_rate_optim'])
-        s += " agc_auto_on        %s\n" % onoff(cfg3['agc_auto_on'])
+        s += " low_data_rate_opti %s\n" % onoff(cfg['low_data_rate_optim'])
+        s += " agc_auto_on        %s\n" % onoff(cfg['agc_auto_on'])
         s += " symb_timeout       %s\n" % self.get_symb_timeout()
         s += " freq_hop_period    %s\n" % self.get_hop_period()
         s += " hop_channel        %s\n" % self.get_hop_channel()

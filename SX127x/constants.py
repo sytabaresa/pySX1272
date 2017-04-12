@@ -45,16 +45,9 @@ class MODE:
 
 @add_lookup
 class BW:
-    BW7_8   = 0
-    BW10_4  = 1
-    BW15_6  = 2
-    BW20_8  = 3
-    BW31_25 = 4
-    BW41_7  = 5
-    BW62_5  = 6
-    BW125   = 7
-    BW250   = 8
-    BW500   = 9
+    BW125   = 0
+    BW250   = 1
+    BW500   = 2
 
 
 @add_lookup
@@ -150,7 +143,7 @@ class REG:
         HOP_PERIOD         = 0x24
         FIFO_RX_BYTE_ADDR  = 0x25
         MODEM_CONFIG_3     = 0x26
-        PPM_CORRECTION     = 0x27
+        PPM_CORRECTION     = 0x27 # Not exist in sx1272
         FEI_MSB            = 0x28
         DETECT_OPTIMIZE    = 0X31
         INVERT_IQ          = 0x33
@@ -159,13 +152,13 @@ class REG:
         DIO_MAPPING_1      = 0x40
         DIO_MAPPING_2      = 0x41
         VERSION            = 0x42
-        TCXO               = 0x4B
-        PA_DAC             = 0x4D
-        AGC_REF            = 0x61
-        AGC_THRESH_1       = 0x62
-        AGC_THRESH_2       = 0x63
-        AGC_THRESH_3       = 0x64
-        PLL                = 0x70
+        TCXO               = 0x58
+        PA_DAC             = 0x5A
+        AGC_REF            = 0x43
+        AGC_THRESH_1       = 0x44
+        AGC_THRESH_2       = 0x45
+        AGC_THRESH_3       = 0x46
+        PLL                = 0x5C
 
     @add_lookup
     class FSK:

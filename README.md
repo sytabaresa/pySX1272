@@ -1,17 +1,17 @@
-Note: The pySX127x project will soon be renamed to pyLoRa. See [Roadmap](#roadmap) for more.
+Note: This [pySX127x](https://github.com/mayeranalytics/pySX127x) fork (pySX1272) will soon be merged/remplaced with pyLoRa. See [Roadmap](https://github.com/mayeranalytics/pySX127x#roadmap) for more.
 
 # Overview
 
-This is a python interface to the [Semtech SX1276/7/8/9](http://www.semtech.com/wireless-rf/rf-transceivers/) 
-long range, low power transceiver family.
+This is a python interface to the [Semtech SX1272](http://www.semtech.com/wireless-rf/rf-transceivers/) 
+long range, low power transceiver.
 
-The SX127x have both LoRa and FSK capabilities. Here the focus lies on the
+The SX1272 have both LoRa and FSK capabilities. Here the focus lies on the
 LoRa spread spectrum modulation hence only the LoRa modem interface is implemented so far 
 (but see the [roadmap](#roadmap) below for future plans).
 
 Spread spectrum modulation has a number of intriguing features:
 * High interference immunity
-* Up to 20dBm link budget advantage (for the SX1276/7/8/9)
+* Up to 20dBm link budget advantage (for the SX1272)
 * High Doppler shift immunity
 
 More information about LoRa can be found on the [LoRa Alliance website](https://lora-alliance.org).
@@ -37,27 +37,6 @@ Prototyping on a full-blown OS using high level programming languages has severa
 * Technology testing ist faster
 * Proof of concept is easier to achieve
 * The application development phase is reached quicker 
-
-
-# Hardware
-
-The transceiver module is a SX1276 based Modtronix [inAir9B](http://modtronix.com/inair9.html). 
-It is mounted on a prototyping board to a Raspberry Pi rev 2 model B.
-
-| Proto board pin | RaspPi GPIO | Direction |
-|:----------------|:-----------:|:---------:|
-| inAir9B DIO0    | GPIO 22     |    IN     |
-| inAir9B DIO1    | GPIO 23     |    IN     |
-| inAir9B DIO2    | GPIO 24     |    IN     |
-| inAir9B DIO3    | GPIO 25     |    IN     |
-| inAir9b Reset   | GPIO ?      |    OUT    |
-| LED             | GPIO 18     |    OUT    |
-| Switch          | GPIO 4      |    IN     |
-
-Todo:
-- [ ] Add picture(s)
-- [ ] Wire the SX127x reset to a GPIO?
-
 
 # Code Examples
 
@@ -118,7 +97,7 @@ lora.set_coding_rate(CODING_RATE.CR4_6)     # set it to CR4_6
 # Installation
 
 Make sure SPI is activated on you RaspberryPi: [SPI](https://www.raspberrypi.org/documentation/hardware/raspberrypi/spi/README.md)
-**pySX127x** requires these two python packages:
+**pySX1272** requires these two python packages:
 * [RPi.GPIO](https://pypi.python.org/pypi/RPi.GPIO") for accessing the GPIOs, it should be already installed on
   a standard Raspian Linux image
 * [spidev](https://pypi.python.org/pypi/spidev) for controlling SPI
@@ -168,7 +147,7 @@ the setter input types.
 The register addresses are defined in class `SX127x.constants.REG` and we use a specific naming convention which 
 is best illustrated by a few examples:
 
-| Register | Modem | Semtech doc.      | pySX127x                   |
+| Register | Modem | Semtech doc.      | pySX1272                   |
 |----------|-------|-------------------| ---------------------------|
 | 0x0E     | LoRa  | RegFifoTxBaseAddr | REG.LORA.FIFO_TX_BASE_ADDR |
 | 0x0E     | FSK   | RegRssiCOnfig     | REG.FSK.RSSI_CONFIG        |
@@ -249,15 +228,15 @@ Follow me on twitter [@markuscmayer](https://twitter.com/markuscmayer) and
 
 # Roadmap
 
-**pySX127x** is still in the development phase. The current version is 0.1.
+**pySX1272** is still in the development phase. The current version is 0.1.
 
 95% of functions for the Sx127x LoRa capabilities are implemented. Functions will be added when necessary.
 The test coverage is rather low but we intend to change that soon.
 
 ### Semtech SX1272/3 vs. SX1276/7/8/9
-**pySX127x** is not entirely compatible with the 1272.
+**pySX1272** is not entirely compatible with the SX127x.
 The 1276 and 1272 chips are different and the interfaces not 100% identical. For example registers 0x26/27. 
-But the pySX127x library should get you pretty far if you use it with care. Here are the two datasheets:
+But the pySX1272 library should get you pretty far if you use it with care. Here are the two datasheets:
 * [Semtech - SX1276/77/78/79 - 137 MHz to 1020 MHz Low Power Long Range Transceiver](http://www.semtech.com/images/datasheet/sx1276_77_78_79.pdf)
 * [Semtech SX1272/73 - 860 MHz to 1020 MHz Low Power Long Range Transceiver](http://www.semtech.com/images/datasheet/sx1272.pdf)
 
@@ -268,10 +247,10 @@ that have identical or almost identical SPI interface as the Semtech [SX1276/7/8
 ### Microchip transceiver IC ###
 Likewise Microchip has the chip [RN2483](http://ww1.microchip.com/downloads/en/DeviceDoc/50002346A.pdf)
 
-The [pySX127x](https://github.com/mayeranalytics/pySX127x) project will therefore be renamed to pyLoRa at some point.
+The [pySX1272](https://github.com/mayeranalytics/pySX1272) project will therefore be renamed to pyLoRa at some point.
 
 # LoRaWAN
-LoRaWAN is a LPWAN (low power WAN) and, and  **pySX127x** has almost no relationship with LoRaWAN. Here we only deal with the interface into the chip(s) that enable the physical layer of LoRaWAN networks.
+LoRaWAN is a LPWAN (low power WAN) and, and  **pySX1272** has almost no relationship with LoRaWAN. Here we only deal with the interface into the chip(s) that enable the physical layer of LoRaWAN networks.
 
 
 # References
@@ -292,26 +271,24 @@ LoRaWAN is a LPWAN (low power WAN) and, and  **pySX127x** has almost no relation
 (technical paper)
 
 
-# Copyright and License
-
-&copy; 2015 Mayer Analytics Ltd., All Rights Reserved.
+# License
 
 ### Short version
 The license is [GNU AGPL](http://www.gnu.org/licenses/agpl-3.0.en.html).
 
 ### Long version
-pySX127x is free software: you can redistribute it and/or modify it under the terms of the 
+pySX1272 is free software: you can redistribute it and/or modify it under the terms of the 
 GNU Affero General Public License as published by the Free Software Foundation, 
 either version 3 of the License, or (at your option) any later version.
 
-pySX127x is distributed in the hope that it will be useful, 
+pySX1272 is distributed in the hope that it will be useful, 
 but WITHOUT ANY WARRANTY; without even the implied warranty of 
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
 See the GNU Affero General Public License for more details.
 
 You can be released from the requirements of the license by obtaining a commercial license. 
 Such a license is mandatory as soon as you develop commercial activities involving 
-pySX127x without disclosing the source code of your own applications, or shipping pySX127x with a closed source product.
+pySX1272 without disclosing the source code of your own applications, or shipping pySX1272 with a closed source product.
 
 You should have received a copy of the GNU General Public License
 along with pySX127.  If not, see <http://www.gnu.org/licenses/>.
